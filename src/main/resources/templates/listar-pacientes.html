@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Pacientes - AppSUS</title>
+    <link rel="stylesheet" href="/css/global.css"> </head>
+<body>
+    <div class="navbar">
+        <a href="/">Cadastrar Paciente</a>
+        <a href="/pacientes/lista">Listar Pacientes</a>
+        <a href="/medicos/formulario">Cadastrar Médico</a>
+        <a href="/medicos/lista">Listar Médicos</a>
+        <a href="/consultas/cadastro">Agendar Consulta</a>
+        <a href="/consultas/lista">Listar Consultas</a>
+        <a href="/chamados/cadastro">Registrar Chamado</a>
+        <a href="/chamados/lista">Listar Chamados</a>
+    </div>
+
+    <div class="container">
+        <h2>Pacientes Cadastrados</h2>
+        <div class="add-link">
+            <a href="/pacientes/cadastro">Novo Paciente</a> </div>
+        <div class="table-container">
+            <table id="pacientesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Data Nasc.</th>
+                        <th>Telefone</th>
+                        <th>Email</th>
+                        <th>Endereço</th>
+                        <th>Deficiência</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <p id="loadingMessagePacientes" class="loading-message">Carregando pacientes...</p>
+            <p id="noDataMessagePacientes" class="no-data-message" style="display: none;">Nenhum paciente cadastrado ainda.</p>
+            <p id="errorMessagePacientes" class="error-message" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pacientesTableBody = document.querySelector('#pacientesTable tbody');
+            const loadingMessage = document.getElementById('loadingMessagePacientes');
+            const noDataMessage = document.getElementById('noDataMessagePacientes');
+            const errorMessage = document.getElementById('errorMessagePacientes');
+
+            function fetchPacientes() {
+                loadingMessage.style.display = 'block';
+                noDataMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                pacientesTableBody.innerHTML = ''; // Limpa a tabela antes de popular
+
+                fetch('/api/pacientes') // Endpoint correto da API
+                    .then(response => {
+                        if (!response.ok) {
+                            // Tenta ler o corpo do erro como texto para dar mais detalhes
+                            return response.text().then(text => {
+                                let errorDetail = text;
+                                try {
+                                    const jsonError = JSON.parse(text);
+                                    errorDetail = jsonError.message || text;
+                                } catch (e) { /* Ignora se não for JSON, usa o texto puro */ }
+                                throw new Error(`Falha ao carregar pacientes: ${response.status} - ${errorDetail}`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(pacientes => {
+                        console.log("FRONTEND: Pacientes recebidos pela API na página de listagem:", pacientes); // PARA DEBUG
+                        loadingMessage.style.display = 'none';
+
+                        if (!pacientes || pacientes.length === 0) {
+                            noDataMessage.style.display = 'block';
+                            return;
+                        }
+                        
+                        noDataMessage.style.display = 'none'; // Garante que a mensagem "sem dados" está escondida
+                        
+                        pacientes.forEach(paciente => {
+                            const row = pacientesTableBody.insertRow();
+                            row.insertCell().textContent = paciente.id;
+                            row.insertCell().textContent = paciente.nome || 'N/A';
+                            row.insertCell().textContent = paciente.cpf || 'N/A'; // O DTO pode ou não expor CPF
+
+                            // Formata a data se ela existir
+                            let dataNascimentoFormatada = 'N/A';
+                            if (paciente.dataDeNascimento) {
+                                // Tenta criar a data e formatar. Se falhar, mantém 'N/A'.
+                                try {
+                                    dataNascimentoFormatada = new Date(paciente.dataDeNascimento + 'T00:00:00').toLocaleDateString('pt-BR');
+                                } catch (e) {
+                                    console.warn("Data de nascimento em formato inválido:", paciente.dataDeNascimento);
+                                }
+                            }
+                            row.insertCell().textContent = dataNascimentoFormatada;
+                            
+                            row.insertCell().textContent = paciente.telefoneContato || 'N/A';
+                            row.insertCell().textContent = paciente.emailContato || 'N/A';
+
+                            const endereco = paciente.endereco;
+                            let enderecoText = 'N/A';
+                            if (endereco) {
+                                enderecoText = `${endereco.logradouro || ''}, ${endereco.numero || ''}`;
+                                if (endereco.bairro && endereco.bairro.trim() !== '') enderecoText += ` - ${endereco.bairro}`;
+                                if (endereco.cidade && endereco.cidade.trim() !== '') enderecoText += `, ${endereco.cidade}`;
+                                if (endereco.estado && endereco.estado.trim() !== '') enderecoText += `/${endereco.estado}`;
+                            }
+                            row.insertCell().textContent = enderecoText;
+
+                            // Assumindo que o PacienteResponseDTO tem isPossuiDeficiencia() e getTipoDeDeficiencia()
+                            const deficienciaText = paciente.possuiDeficiencia ? 
+                                `Sim (${paciente.tipoDeDeficiencia || 'Não especificado'})` : 'Não';
+                            row.insertCell().textContent = deficienciaText;
+
+                            const actionsCell = row.insertCell();
+                            actionsCell.classList.add('action-buttons'); // Para estilização via global.css
+                            
+                            const detailsButton = document.createElement('a');
+                            detailsButton.href = `/pacientes/${paciente.id}/detalhes`;
+                            detailsButton.textContent = 'Ver Detalhes';
+                            detailsButton.classList.add('action-button'); 
+                            actionsCell.appendChild(detailsButton);
+
+                            // Adicionar botão de deletar, se a API tiver o endpoint DELETE /api/pacientes/{id}
+                            // const deleteButton = document.createElement('button');
+                            // deleteButton.textContent = 'Deletar';
+                            // deleteButton.classList.add('delete-btn');
+                            // deleteButton.onclick = function() { deletePaciente(paciente.id, paciente.nome); };
+                            // actionsCell.appendChild(deleteButton);
+                        });
+                    })
+                    .catch(error => {
+                        loadingMessage.style.display = 'none';
+                        errorMessage.textContent = error.message;
+                        errorMessage.style.display = 'block';
+                        console.error('Erro ao buscar ou processar pacientes:', error);
+                    });
+            }
+
+            // Função para deletar (exemplo, se você tiver o endpoint)
+            /*
+            function deletePaciente(id, nome) {
+                if (!confirm(`Tem certeza que deseja deletar o paciente ${nome} (ID: ${id})?`)) {
+                    return;
+                }
+                fetch(`/api/pacientes/${id}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Paciente deletado com sucesso!');
+                            fetchPacientes(); // Recarrega a lista
+                        } else {
+                            response.json().then(err => {
+                                alert(`Erro ao deletar paciente: ${err.message || response.status}`);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        alert(`Erro de conexão ao deletar: ${error.message}`);
+                        console.error('Erro ao deletar:', error);
+                    });
+            }
+            */
+
+            fetchPacientes(); // Busca os pacientes ao carregar a página
+        });
+    </script>
+    <script>
+        // Script da Navbar Ativa (a versão mais recente com normalização de path)
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentPath = window.location.pathname;
+            if (currentPath !== '/' && currentPath.endsWith('/')) {
+                currentPath = currentPath.slice(0, -1);
+            }
+            const navLinks = document.querySelectorAll('.navbar a');
+            // console.log("--- DEBUG NAVBAR ATIVA (listar-pacientes.html) ---");
+            // console.log("URL Atual Normalizada (currentPath):", currentPath);
+            navLinks.forEach(link => {
+                let linkHref = link.getAttribute('href');
+                if (linkHref && linkHref !== '/' && linkHref.endsWith('/')) {
+                    linkHref = linkHref.slice(0, -1);
+                }
+                link.classList.remove('active'); 
+                // console.log("Verificando linkHref Normalizado:", linkHref, "| Texto:", link.textContent.trim());
+                let shouldBeActive = false;
+                const homePath1 = "/"; 
+                const cadastroPacientePath = "/pacientes/cadastro"; 
+                if (linkHref === homePath1 || linkHref === cadastroPacientePath) {
+                    if (currentPath === homePath1 || currentPath === cadastroPacientePath) {
+                        shouldBeActive = true;
+                    }
+                } else if (linkHref === currentPath) {
+                    shouldBeActive = true;
+                }
+                if (shouldBeActive) {
+                    // console.log(">>> ATIVANDO LINK:", linkHref);
+                    link.classList.add('active');
+                }
+            });
+            // console.log("--- FIM DEBUG NAVBAR ATIVA ---");
+        });
+    </script>
+</body>
+</html>

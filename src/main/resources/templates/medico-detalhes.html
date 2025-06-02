@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Médico - Sistema SUS</title>
+    <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+<div class="navbar">
+    <a href="/">Cadastrar Paciente</a>
+    <a href="/pacientes/lista">Listar Pacientes</a>
+    <a href="/medicos/formulario">Cadastrar Médico</a> <a href="/medicos/lista">Listar Médicos</a>
+    <a href="/consultas/cadastro">Agendar Consulta</a>
+    <a href="/consultas/lista">Listar Consultas</a>
+    <a href="/chamados/cadastro">Registrar Chamado</a>
+    <a href="/chamados/lista">Listar Chamados</a>
+</div>
+
+    <div class="container">
+        <h2 id="medicoNomeTitulo">Detalhes do Médico</h2>
+        <div id="medicoDetails" class="details-grid" style="margin-bottom: 20px;">
+            </div>
+        
+        <h3 class="section-title">Ações de Estado</h3>
+        <div class="action-buttons-group" style="margin-bottom: 30px;">
+            <button id="btnFerias">Solicitar Férias</button>
+            <button id="btnLicenca">Entrar em Licença</button>
+            <button id="btnRetornar">Retornar ao Trabalho</button>
+        </div>
+        <p id="statusAcao" style="font-weight: bold;"></p>
+
+        <h3 class="section-title">Consultas Agendadas</h3>
+        <div class="table-container">
+            <table id="consultasMedicoTable">
+                <thead>
+                    <tr>
+                        <th>ID Consulta</th>
+                        <th>Paciente</th>
+                        <th>Data/Hora</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <p id="noConsultasMessage" style="display: none;">Nenhuma consulta agendada para este médico.</p>
+        </div>
+
+
+        <div class="back-button" style="margin-top: 30px;">
+            <a href="/medicos/lista">Voltar para Lista de Médicos</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const medicoDetailsDiv = document.getElementById('medicoDetails');
+            const medicoNomeTitulo = document.getElementById('medicoNomeTitulo');
+            const statusAcaoP = document.getElementById('statusAcao');
+            const consultasTableBody = document.querySelector('#consultasMedicoTable tbody');
+            const noConsultasMsg = document.getElementById('noConsultasMessage');
+
+
+            const pathParts = window.location.pathname.split('/');
+            const medicoId = pathParts[pathParts.length - 2]; // Espera /medicos/{id}/detalhes
+
+            function carregarDetalhesMedico() {
+                statusAcaoP.textContent = '';
+                fetch(`/api/medicos/${medicoId}`)
+                    .then(response => response.ok ? response.json() : Promise.reject('Médico não encontrado'))
+                    .then(medico => {
+                        medicoNomeTitulo.textContent = `Detalhes do Médico: ${medico.nome}`;
+                        medicoDetailsDiv.innerHTML = `
+                            <label>ID:</label><span>${medico.id}</span>
+                            <label>Nome:</label><span>${medico.nome}</span>
+                            <label>CPF:</label><span>${medico.cpf || 'N/A'}</span>
+                            <label>CRM:</label><span>${medico.crm}</span>
+                            <label>Especialidade:</label><span>${medico.especialidade}</span>
+                            <label>Estado Atual:</label><span style="font-weight:bold;">${medico.estadoAtualDescricao}</span>
+                        `;
+                        carregarConsultasMedico();
+                    })
+                    .catch(error => {
+                        medicoDetailsDiv.innerHTML = `<p class="error-message">${error}</p>`;
+                        console.error('Erro:', error);
+                    });
+            }
+            
+            function carregarConsultasMedico() {
+                fetch(`/api/consultas/medico/${medicoId}`)
+                    .then(response => response.ok ? response.json() : Promise.reject('Falha ao carregar consultas'))
+                    .then(consultas => {
+                        consultasTableBody.innerHTML = '';
+                        if(consultas.length === 0) {
+                            noConsultasMsg.style.display = 'block';
+                            return;
+                        }
+                        noConsultasMsg.style.display = 'none';
+                        consultas.forEach(c => {
+                            const row = consultasTableBody.insertRow();
+                            row.insertCell().textContent = c.id;
+                            row.insertCell().textContent = c.pacienteNome || 'N/A';
+                            row.insertCell().textContent = new Date(c.dataHora).toLocaleString('pt-BR');
+                            row.insertCell().textContent = c.descricao || 'N/A';
+                            row.insertCell().textContent = c.statusConsulta;
+                        });
+                    })
+                    .catch(error => {
+                         consultasTableBody.innerHTML = `<tr><td colspan="5" class="error-message">${error}</td></tr>`;
+                         console.error('Erro consultas:', error);
+                    });
+            }
+
+            function acaoEstado(endpoint) {
+                statusAcaoP.textContent = 'Processando...';
+                fetch(`/api/medicos/${medicoId}/${endpoint}`, { method: 'POST' })
+                    .then(response => response.ok ? response.json() : response.text().then(text => Promise.reject(text)))
+                    .then(medicoAtualizado => {
+                        statusAcaoP.textContent = `Ação realizada! Novo estado: ${medicoAtualizado.estadoAtualDescricao}`;
+                        statusAcaoP.style.color = 'green';
+                        carregarDetalhesMedico(); // Recarrega para mostrar o estado atualizado e as consultas
+                    })
+                    .catch(error => {
+                        statusAcaoP.textContent = `Erro na ação: ${error}`;
+                        statusAcaoP.style.color = 'red';
+                        console.error('Erro na ação de estado:', error);
+                    });
+            }
+
+            document.getElementById('btnFerias').addEventListener('click', () => acaoEstado('solicitar-ferias'));
+            document.getElementById('btnLicenca').addEventListener('click', () => acaoEstado('entrar-em-licenca'));
+            document.getElementById('btnRetornar').addEventListener('click', () => acaoEstado('retornar-ao-trabalho'));
+
+            carregarDetalhesMedico();
+        });
+
+            document.addEventListener('DOMContentLoaded', function() {
+        // --- Lógica para os Menus Dropdown ---
+        const dropdownToggles = document.querySelectorAll('.navbar .dropdown-toggle');
+
+        dropdownToggles.forEach(toggle => {
+            toggle.addEventListener('click', function(event) {
+                event.stopPropagation(); // Impede que o clique se propague para o 'window'
+                const menuId = this.id.replace('Toggle', 'Menu'); // Constrói o ID do menu
+                const menu = document.getElementById(menuId);
+
+                // Fecha outros dropdowns que possam estar abertos
+                document.querySelectorAll('.navbar .dropdown-menu.show').forEach(openMenu => {
+                    if (openMenu !== menu) {
+                        openMenu.classList.remove('show');
+                    }
+                });
+
+                // Alterna a exibição do menu clicado
+                if (menu) {
+                    menu.classList.toggle('show');
+                }
+            });
+        });
+
+        // Fecha os dropdowns se o usuário clicar fora deles
+        window.addEventListener('click', function(event) {
+            // Verifica se o clique não foi em um toggle OU dentro de um menu aberto
+            let clickedInsideDropdown = false;
+            if (event.target.closest('.nav-item.dropdown')) {
+                 clickedInsideDropdown = true;
+            }
+            // Se não foi num toggle e não foi dentro de um menu, fecha todos
+            if (!event.target.matches('.navbar .dropdown-toggle') && !clickedInsideDropdown) {
+                 document.querySelectorAll('.navbar .dropdown-menu.show').forEach(openMenu => {
+                    openMenu.classList.remove('show');
+                });
+            }
+        });
+
+        // --- Lógica para o Link Ativo da Navbar (Adaptada para Dropdowns) ---
+        const currentPath = window.location.pathname;
+        const allNavLinks = document.querySelectorAll('.navbar a.dropdown-item'); // Links dentro dos dropdowns
+        const allNavToggles = document.querySelectorAll('.navbar .dropdown-toggle'); // Botões dos dropdowns
+
+        allNavLinks.forEach(link => {
+            const linkPath = link.getAttribute('href');
+            if (linkPath === currentPath || (currentPath === '/pacientes/cadastro' && linkPath === '/')) {
+                link.classList.add('active');
+                // Também ativa o botão pai do dropdown
+                const parentDropdownMenu = link.closest('.dropdown-menu');
+                if (parentDropdownMenu) {
+                    const toggleId = parentDropdownMenu.id.replace('Menu', 'Toggle');
+                    const parentToggle = document.getElementById(toggleId);
+                    if (parentToggle) {
+                        parentToggle.classList.add('active');
+                    }
+                }
+            }
+        });
+
+        // Caso especial: Se a URL é exatamente a de um toggle (menos provável, mas para ser completo)
+        // Ou se nenhum item de dropdown está ativo, mas a URL corresponde a uma seção geral (ex: /cadastros/)
+        // Esta parte pode precisar de lógica mais específica dependendo de como você quer que os toggles fiquem ativos
+        // Por ora, a lógica acima que ativa o toggle se um filho estiver ativo é a principal.
+        
+        // Se a página é a home ('/' ou '/pacientes/cadastro') e o link "Cadastrar Paciente" está no dropdown "Cadastros"
+        if (currentPath === '/' || currentPath === '/pacientes/cadastro') {
+            const cadastrosToggle = document.getElementById('cadastrosDropdownToggle');
+            const cadastrarPacienteLink = document.querySelector('#cadastrosDropdownMenu a[href="/"]');
+            if (cadastrosToggle && cadastrarPacienteLink) {
+                 cadastrosToggle.classList.add('active');
+                 cadastrarPacienteLink.classList.add('active');
+            }
+        }
+
+    });
+    </script>
+    <script>
+        // Script da Navbar Ativa (coloque o script completo aqui)
+        // ... (igual ao de listar-medicos.html, mas ajuste o active para "/medicos/{id}/detalhes" se quiser ser específico) ...
+         document.addEventListener('DOMContentLoaded', function() { /* ... seu script navbar ... */ });
+    </script>
+</body>
+</html>

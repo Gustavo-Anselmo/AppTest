@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Médicos - AppSUS</title>
+    <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+<div class="navbar">
+    <a href="/">Cadastrar Paciente</a>
+    <a href="/pacientes/lista">Listar Pacientes</a>
+    <a href="/medicos/formulario">Cadastrar Médico</a> <a href="/medicos/lista">Listar Médicos</a>
+    <a href="/consultas/cadastro">Agendar Consulta</a>
+    <a href="/consultas/lista">Listar Consultas</a>
+    <a href="/chamados/cadastro">Registrar Chamado</a>
+    <a href="/chamados/lista">Listar Chamados</a>
+</div>
+
+    <div class="container">
+        <h2>Médicos Cadastrados</h2>
+        
+        <div class="add-link" style="margin-bottom: 20px;">
+            <a href="/medicos/formulario">Novo Médico</a>
+        </div>
+        <div class="table-container">
+            <table id="medicosTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>CRM</th>
+                        <th>Especialidade</th>
+                        <th>Estado Atual</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <p id="loadingMessage" class="loading-message">Carregando médicos...</p>
+            <p id="noDataMessage" class="no-data-message" style="display: none;">Nenhum médico cadastrado.</p>
+            <p id="errorMessage" class="error-message" style="display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableBody = document.querySelector('#medicosTable tbody');
+            const loadingMsg = document.getElementById('loadingMessage');
+            const noDataMsg = document.getElementById('noDataMessage');
+            const errorMsg = document.getElementById('errorMessage');
+
+            fetch('/api/medicos') // Endpoint da API
+                .then(response => {
+                    if (!response.ok) {
+                        // Tenta ler o corpo do erro como texto para dar mais detalhes
+                        return response.text().then(text => {
+                            let errorDetail = text;
+                            try {
+                                const jsonError = JSON.parse(text);
+                                errorDetail = jsonError.message || text;
+                            } catch (e) { /* Ignora se não for JSON, usa o texto puro */ }
+                            throw new Error(`Falha ao carregar médicos: ${response.status} - ${errorDetail}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(medicos => {
+                    loadingMsg.style.display = 'none';
+                    tableBody.innerHTML = ''; 
+
+                    if (medicos.length === 0) {
+                        noDataMsg.style.display = 'block';
+                        return;
+                    }
+
+                    medicos.forEach(medico => {
+                        const row = tableBody.insertRow();
+                        row.insertCell().textContent = medico.id;
+                        row.insertCell().textContent = medico.nome;
+                        row.insertCell().textContent = medico.crm;
+                        row.insertCell().textContent = medico.especialidade;
+                        row.insertCell().textContent = medico.estadoAtualDescricao;
+
+                        const actionsCell = row.insertCell();
+                        const detailsButton = document.createElement('a');
+                        detailsButton.href = `/medicos/${medico.id}/detalhes`; 
+                        detailsButton.textContent = 'Ver Detalhes';
+                        detailsButton.classList.add('action-button'); 
+                        actionsCell.appendChild(detailsButton);
+                    });
+                })
+                .catch(error => {
+                    loadingMsg.style.display = 'none';
+                    errorMsg.textContent = error.message;
+                    errorMsg.style.display = 'block';
+                    console.error('Erro ao buscar médicos:', error);
+                });
+        });
+    </script>
+    <script> // Script Navbar Ativa
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.navbar a');
+
+            navLinks.forEach(link => {
+                const linkHref = link.getAttribute('href');
+                if ((linkHref === '/' || linkHref === '/pacientes/cadastro')) {
+                    if (currentPath === '/' || currentPath === '/pacientes/cadastro') {
+                        link.classList.add('active');
+                    }
+                } else if (linkHref === currentPath) { 
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

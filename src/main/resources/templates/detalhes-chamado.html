@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Chamado - AppSUS</title>
+    <link rel="stylesheet" href="/css/global.css"> </head>
+<body>
+<div class="navbar">
+    <a href="/">Cadastrar Paciente</a>
+    <a href="/pacientes/lista">Listar Pacientes</a>
+    <a href="/medicos/formulario">Cadastrar Médico</a> <a href="/medicos/lista">Listar Médicos</a>
+    <a href="/consultas/cadastro">Agendar Consulta</a>
+    <a href="/consultas/lista">Listar Consultas</a>
+    <a href="/chamados/cadastro">Registrar Chamado</a>
+    <a href="/chamados/lista">Listar Chamados</a>
+</div>
+
+    <div class="container">
+        <h2 id="chamadoTitulo">Detalhes do Chamado</h2>
+        <div id="loading" class="loading-message">Carregando...</div>
+        <div id="notFound" class="not-found-message" style="display: none;">Chamado não encontrado.</div>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div id="chamadoDetails" class="details-view" style="display: none;">
+            <h3 class="section-title">Dados do Chamado</h3>
+            <div class="details-grid">
+                <label>ID do Chamado:</label><span id="chamadoIdDisplay"></span>
+                <label>Data/Hora:</label><span id="dataHoraChamado"></span>
+                <label>Status:</label><span id="statusChamado"></span>
+                <label>Sintomas Principais:</label><span id="sintomasChamado"></span>
+                <label>Observações Adicionais:</label><span id="observacoesAdicionaisChamado"></span>
+            </div>
+
+            <h3 class="section-title">Dados do Paciente</h3>
+            <div class="details-grid">
+                <label>ID do Paciente:</label><span id="pacienteId"></span>
+                <label>Nome do Paciente:</label><span id="nomePaciente"></span>
+                <label>CPF do Paciente:</label><span id="cpfPaciente"></span>
+                <label>Telefone:</label><span id="telefonePaciente"></span>
+            </div>
+            
+            <h3 class="section-title">Dados do Usuário (Atendente)</h3>
+            <div class="details-grid">
+                <label>ID do Usuário:</label><span id="usuarioId"></span>
+                <label>Username do Usuário:</label><span id="usernameUsuario"></span>
+            </div>
+
+            <h3 class="section-title">Endereço de Atendimento</h3>
+            <div class="details-grid">
+                <label>Logradouro:</label><span id="logradouroAtendimento"></span>
+                <label>Número:</label><span id="numeroAtendimento"></span>
+                <label>Complemento:</label><span id="complementoAtendimento"></span>
+                <label>Bairro:</label><span id="bairroAtendimento"></span>
+                <label>Cidade:</label><span id="cidadeAtendimento"></span>
+                <label>Estado (UF):</label><span id="estadoAtendimento"></span>
+                <label>CEP:</label><span id="cepAtendimento"></span>
+                <label>País:</label><span id="paisAtendimento"></span>
+            </div>
+        </div>
+
+        <div class="back-button" style="margin-top: 20px;">
+            <a href="/chamados/lista">Voltar para Lista de Chamados</a>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Normaliza currentPath removendo qualquer barra final (exceto se for a raiz)
+        let currentPath = window.location.pathname;
+        if (currentPath !== '/' && currentPath.endsWith('/')) {
+            currentPath = currentPath.slice(0, -1);
+        }
+
+        const navLinks = document.querySelectorAll('.navbar a');
+
+        console.log("--- DEBUG NAVBAR ATIVA ---");
+        console.log("URL Atual Normalizada (currentPath):", currentPath);
+
+        navLinks.forEach(link => {
+            let linkHref = link.getAttribute('href');
+            // Normaliza linkHref removendo qualquer barra final (exceto se for a raiz)
+            if (linkHref !== '/' && linkHref.endsWith('/')) {
+                linkHref = linkHref.slice(0, -1);
+            }
+
+            link.classList.remove('active'); // Remove 'active' de todos para garantir
+
+            console.log("Verificando linkHref Normalizado:", linkHref, "| Texto:", link.textContent.trim());
+
+            let shouldBeActive = false;
+
+            // Caso 1: Link da Home (Cadastrar Paciente é servido por / e /pacientes/cadastro)
+            // Normaliza os caminhos da home para comparação
+            const homePath1 = "/"; // Já normalizado
+            const cadastroPacientePath = "/pacientes/cadastro"; // Já normalizado
+
+            if (linkHref === homePath1 || linkHref === cadastroPacientePath) {
+                if (currentPath === homePath1 || currentPath === cadastroPacientePath) {
+                    shouldBeActive = true;
+                }
+            }
+            // Caso 2: Outros links (correspondência exata dos caminhos normalizados)
+            else if (linkHref === currentPath) {
+                shouldBeActive = true;
+            }
+
+            if (shouldBeActive) {
+                console.log(">>> ATIVANDO LINK:", linkHref);
+                link.classList.add('active');
+            }
+        });
+        console.log("--- FIM DEBUG NAVBAR ATIVA ---");
+    });
+</script>
+</body>
+</html>

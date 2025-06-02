@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Chamados - AppSUS</title>
+    <link rel="stylesheet" href="/css/global.css"> </head>
+<body>
+<div class="navbar">
+    <a href="/">Cadastrar Paciente</a>
+    <a href="/pacientes/lista">Listar Pacientes</a>
+    <a href="/medicos/formulario">Cadastrar Médico</a> <a href="/medicos/lista">Listar Médicos</a>
+    <a href="/consultas/cadastro">Agendar Consulta</a>
+    <a href="/consultas/lista">Listar Consultas</a>
+    <a href="/chamados/cadastro">Registrar Chamado</a>
+    <a href="/chamados/lista">Listar Chamados</a>
+</div>
+
+    <div class="container">
+        <h2>Chamados Registrados</h2>
+        <div class="add-link"> <a href="/chamados/cadastro">Registrar Novo Chamado</a>
+        </div>
+        <div class="table-container">
+            <table id="chamadosTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Paciente</th>
+                        <th>Sintomas</th>
+                        <th>Endereço Atendimento</th>
+                        <th>Data/Hora Chamado</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <p id="loadingMessage" class="loading-message">Carregando chamados...</p>
+            <p id="noDataMessage" class="no-data-message" style="display: none;">Nenhum chamado cadastrado.</p>
+            <p id="errorMessage" class="error-message" style="display: none;"></p>
+        </div>
+    </div>
+
+<script>
+// Script dentro de listar-chamados.html
+document.addEventListener('DOMContentLoaded', function() {
+    const chamadosTableBody = document.querySelector('#chamadosTable tbody');
+    // Certifique-se que os IDs das mensagens correspondem ao seu HTML
+    const loadingMessage = document.getElementById('loadingMessage'); // ou 'loadingMessageChamados'
+    const noDataMessage = document.getElementById('noDataMessage');   // ou 'noDataMessageChamados'
+    const errorMessage = document.getElementById('errorMessage');     // ou 'errorMessageChamados'
+
+    function fetchChamados() {
+        loadingMessage.style.display = 'block';
+        noDataMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+        chamadosTableBody.innerHTML = ''; 
+
+        fetch('/api/chamados') // Endpoint da API
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        let errorDetail = text;
+                        try { const jsonError = JSON.parse(text); errorDetail = jsonError.message || text; }
+                        catch (e) { /* Ignora se não for JSON */ }
+                        throw new Error(`Falha ao carregar chamados: ${response.status} - ${errorDetail}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(chamados => {
+                console.log("FRONTEND (Chamados): Chamados recebidos pela API:", chamados); // LOG PARA DEBUG
+
+                loadingMessage.style.display = 'none';
+
+                if (!chamados || chamados.length === 0) {
+                    noDataMessage.style.display = 'block';
+                    return;
+                }
+                noDataMessage.style.display = 'none';
+                
+                chamados.forEach(chamado => {
+                    const row = chamadosTableBody.insertRow();
+                    row.insertCell().textContent = chamado.id;
+                    // Ajuste os campos conforme o seu ChamadoResponseDTO
+                    row.insertCell().textContent = chamado.pacienteNome ? `${chamado.pacienteNome} (ID: ${chamado.pacienteId})` : 'N/A';
+                    row.insertCell().textContent = chamado.sintomas || 'N/A';
+                    
+                    const endereco = chamado.enderecoAtendimento;
+                    let enderecoText = 'N/A';
+                    if (endereco) {
+                        enderecoText = `${endereco.logradouro || ''}, ${endereco.numero || ''}`;
+                        if (endereco.bairro && endereco.bairro.trim() !== '') enderecoText += ` - ${endereco.bairro}`;
+                        if (endereco.cidade && endereco.cidade.trim() !== '') enderecoText += `, ${endereco.cidade}`;
+                    }
+                    row.insertCell().textContent = enderecoText;
+                    row.insertCell().textContent = chamado.dataHoraChamado ? new Date(chamado.dataHoraChamado).toLocaleString('pt-BR') : 'N/A';
+                    row.insertCell().textContent = chamado.status || 'N/A'; // Supondo que status já é uma string amigável do DTO
+                    
+                    const actionsCell = row.insertCell();
+                    actionsCell.classList.add('action-buttons');
+                    const detailsButton = document.createElement('a');
+                    detailsButton.href = `/chamados/${chamado.id}/detalhes`;
+                    detailsButton.textContent = 'Ver Detalhes';
+                    detailsButton.classList.add('action-button');
+                    actionsCell.appendChild(detailsButton);
+                });
+            })
+            .catch(error => {
+                loadingMessage.style.display = 'none';
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+                console.error('Erro ao buscar ou processar chamados:', error);
+            });
+    }
+    fetchChamados();
+});
+</script>
+</body>
+</html>

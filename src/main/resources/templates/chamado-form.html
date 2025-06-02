@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Chamado - AppSUS</title>
+    <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Cadastrar Paciente</a>
+        <a href="/pacientes/lista">Listar Pacientes</a>
+        <a href="/medicos/formulario">Cadastrar Médico</a>
+        <a href="/medicos/lista">Listar Médicos</a>
+        <a href="/consultas/cadastro">Agendar Consulta</a>
+        <a href="/consultas/lista">Listar Consultas</a>
+        <a href="/chamados/cadastro">Registrar Chamado</a>
+        <a href="/chamados/lista">Listar Chamados</a>
+    </div>
+
+    <div class="container">
+        <h2>Registrar Novo Chamado</h2>
+        <form id="chamadoForm"> <h3 class="section-title">Dados do Chamado</h3>
+            <div class="form-group full-width">
+                <label for="pacienteId">ID do Paciente:</label>
+                <input type="number" id="pacienteId" name="pacienteId" required placeholder="Digite o ID do paciente existente">
+            </div>
+
+            <div class="form-group full-width">
+                <label for="usuarioId">ID do Usuário (Atendente):</label>
+                <input type="number" id="usuarioId" name="usuarioId" required placeholder="Digite o ID do usuário atendente">
+            </div>
+
+            <div class="form-group full-width">
+                <label for="sintomas">Sintomas Principais:</label>
+                <textarea id="sintomas" name="sintomas" rows="4" required placeholder="Descreva os sintomas do paciente..."></textarea>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="observacoesAdicionais">Observações Adicionais:</label>
+                <textarea id="observacoesAdicionais" name="observacoesAdicionais" rows="4" placeholder="Adicione quaisquer outras observações relevantes..."></textarea>
+            </div>
+
+            <h3 class="section-title">Endereço de Atendimento</h3>
+            <div class="form-group full-width">
+                <label for="logradouroAtendimento">Logradouro:</label>
+                <input type="text" id="logradouroAtendimento" name="enderecoAtendimento.logradouro" required>
+            </div>
+            <div class="form-group">
+                <div>
+                    <label for="numeroAtendimento">Número:</label>
+                    <input type="text" id="numeroAtendimento" name="enderecoAtendimento.numero" required>
+                </div>
+                <div>
+                    <label for="complementoAtendimento">Complemento:</label>
+                    <input type="text" id="complementoAtendimento" name="enderecoAtendimento.complemento">
+                </div>
+            </div>
+            <div class="form-group">
+                <div>
+                    <label for="bairroAtendimento">Bairro:</label>
+                    <input type="text" id="bairroAtendimento" name="enderecoAtendimento.bairro" required>
+                </div>
+                <div>
+                    <label for="cidadeAtendimento">Cidade:</label>
+                    <input type="text" id="cidadeAtendimento" name="enderecoAtendimento.cidade" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <div>
+                    <label for="estadoAtendimento">Estado (UF):</label>
+                    <input type="text" id="estadoAtendimento" name="enderecoAtendimento.estado" required maxlength="2" pattern="[A-Za-z]{2}" placeholder="SP">
+                </div>
+                <div>
+                    <label for="cepAtendimento">CEP:</label>
+                    <input type="text" id="cepAtendimento" name="enderecoAtendimento.cep" required pattern="\d{5}-\d{3}" placeholder="00000-000">
+                </div>
+            </div>
+            <div class="form-group full-width">
+                <label for="paisAtendimento">País:</label>
+                <input type="text" id="paisAtendimento" name="enderecoAtendimento.pais" value="Brasil" required>
+            </div>
+            <button type="submit">Registrar Chamado</button>
+            <p id="formMensagemChamado" class="form-message" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chamadoForm = document.getElementById('chamadoForm');
+            const mensagemP = document.getElementById('formMensagemChamado');
+            const cepInput = document.getElementById('cepAtendimento');
+
+            if (cepInput) {
+                cepInput.addEventListener('input', function (e) {
+                    let value = e.target.value.replace(/\D/g, ''); 
+                    if (value.length > 8) value = value.substring(0,8);
+                    if (value.length > 5) {
+                        value = value.substring(0,5) + '-' + value.substring(5);
+                    }
+                    e.target.value = value;
+                });
+            }
+
+            if (chamadoForm) {
+                chamadoForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    mensagemP.textContent = 'Enviando...';
+                    mensagemP.className = 'info form-message'; // Adiciona form-message para consistência
+
+                    const chamadoData = {
+                        pacienteId: parseInt(document.getElementById('pacienteId').value),
+                        usuarioId: parseInt(document.getElementById('usuarioId').value), // ADICIONADO
+                        sintomas: document.getElementById('sintomas').value,
+
+                        // pacienteId: parseInt(document.getElementById('pacienteId').value), // Envia como ID
+                        // sintomas: document.getElementById('sintomas').value,
+                        observacoesAdicionais: document.getElementById('observacoesAdicionais').value,
+                        enderecoAtendimento: {
+                            logradouro: document.getElementById('logradouroAtendimento').value,
+                            numero: document.getElementById('numeroAtendimento').value,
+                            complemento: document.getElementById('complementoAtendimento').value,
+                            bairro: document.getElementById('bairroAtendimento').value,
+                            cidade: document.getElementById('cidadeAtendimento').value,
+                            estado: document.getElementById('estadoAtendimento').value,
+                            cep: document.getElementById('cepAtendimento').value,
+                            pais: document.getElementById('paisAtendimento').value
+                        }
+                        // Não enviamos usuarioId daqui; o backend deve determinar o usuário logado.
+                    };
+
+                    console.log('Enviando JSON do Chamado:', JSON.stringify(chamadoData, null, 2));
+
+                    try {
+                        const response = await fetch('/api/chamados', { // URL CORRIGIDA para /api/chamados
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(chamadoData)
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            mensagemP.textContent = `Chamado ID ${data.id} registrado com sucesso!`;
+                            mensagemP.className = 'success form-message';
+                            chamadoForm.reset();
+                        } else {
+                            const errorData = await response.json().catch(async () => ({ 
+                                message: await response.text() || `Erro HTTP ${response.status}. Verifique os dados.` 
+                            }));
+                            mensagemP.textContent = `Erro ao registrar chamado: ${errorData.message || 'Ocorreu um erro.'}`;
+                            mensagemP.className = 'error form-message';
+                            console.error("Erro do servidor ao registrar chamado:", errorData);
+                        }
+                    } catch (error) {
+                        mensagemP.textContent = `Erro de conexão: ${error.message || 'Não foi possível conectar ao servidor.'}`;
+                        mensagemP.className = 'error form-message';
+                        console.error('Erro na requisição ao registrar chamado:', error);
+                    }
+                });
+            }
+        });
+    </script>
+    <script> 
+        // Script da Navbar Ativa (coloque a versão mais recente aqui)
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentPath = window.location.pathname;
+            if (currentPath !== '/' && currentPath.endsWith('/')) {
+                currentPath = currentPath.slice(0, -1);
+            }
+            const navLinks = document.querySelectorAll('.navbar a');
+            navLinks.forEach(link => {
+                let linkHref = link.getAttribute('href');
+                if (linkHref && linkHref !== '/' && linkHref.endsWith('/')) {
+                    linkHref = linkHref.slice(0, -1);
+                }
+                link.classList.remove('active'); 
+                let shouldBeActive = false;
+                const homePath1 = "/"; 
+                const cadastroPacientePath = "/pacientes/cadastro"; 
+                if (linkHref === homePath1 || linkHref === cadastroPacientePath) {
+                    if (currentPath === homePath1 || currentPath === cadastroPacientePath) {
+                        shouldBeActive = true;
+                    }
+                } else if (linkHref === currentPath) {
+                    shouldBeActive = true;
+                }
+                if (shouldBeActive) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

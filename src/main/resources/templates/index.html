@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Paciente - AppSUS</title>
+    <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+<div class="navbar">
+    <a href="/">Cadastrar Paciente</a>
+    <a href="/pacientes/lista">Listar Pacientes</a>
+    <a href="/medicos/formulario">Cadastrar Médico</a> <a href="/medicos/lista">Listar Médicos</a>
+    <a href="/consultas/cadastro">Agendar Consulta</a>
+    <a href="/consultas/lista">Listar Consultas</a>
+    <a href="/chamados/cadastro">Registrar Chamado</a>
+    <a href="/chamados/lista">Listar Chamados</a>
+</div>
+
+    <div class="container">
+        <h2>Cadastro de Paciente</h2>
+        <form id="pacienteForm">
+            <h3 class="section-title">Dados Pessoais</h3>
+            <div class="form-group">
+                <div>
+                    <label for="nome">Nome Completo:</label>
+                    <input type="text" id="nome" name="nome" required />
+                </div>
+                <div>
+                    <label for="cpf">CPF:</label>
+                    <input type="text" id="cpf" name="cpf" required placeholder="000.000.000-00" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div>
+                    <label for="dataDeNascimento">Data de Nascimento:</label>
+                    <input type="date" id="dataDeNascimento" name="dataDeNascimento" required />
+                </div>
+                <div>
+                    <label for="telefoneContato">Telefone:</label>
+                    <input type="tel" id="telefoneContato" name="telefoneContato" required placeholder="(00) 00000-0000" />
+                </div>
+            </div>
+            <div class="form-group full-width">
+                 <label for="emailContato">Email:</label>
+                 <input type="email" id="emailContato" name="emailContato" required placeholder="seuemail@exemplo.com"/>
+            </div>
+
+            <h3 class="section-title">Endereço</h3>
+            <div class="form-group full-width">
+                <label for="logradouro">Rua (Logradouro):</label>
+                <input type="text" id="logradouro" name="endereco.logradouro" required />
+            </div>
+             <div class="form-group">
+                <div>
+                    <label for="numero">Número:</label>
+                    <input type="text" id="numero" name="endereco.numero" required />
+                </div>
+                <div>
+                     <label for="complemento">Complemento:</label>
+                     <input type="text" id="complemento" name="endereco.complemento" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div>
+                    <label for="bairro">Bairro:</label>
+                    <input type="text" id="bairro" name="endereco.bairro" required />
+                </div>
+                <div>
+                    <label for="cidade">Cidade:</label>
+                    <input type="text" id="cidade" name="endereco.cidade" required />
+                </div>
+            </div>
+             <div class="form-group">
+                <div>
+                    <label for="estado">Estado (UF):</label>
+                    <input type="text" id="estado" name="endereco.estado" required maxlength="2" pattern="[A-Za-z]{2}" placeholder="SP" />
+                </div>
+                <div>
+                    <label for="cep">CEP:</label>
+                    <input type="text" id="cep" name="endereco.cep" required pattern="\d{5}-\d{3}" placeholder="00000-000" />
+                </div>
+            </div>
+            <div class="form-group full-width">
+                <label for="pais">País:</label>
+                <input type="text" id="pais" name="endereco.pais" value="Brasil" required />
+            </div>
+
+            <h3 class="section-title">Informações de Deficiência</h3>
+            <div class="form-group checkbox-group full-width">
+                <input type="checkbox" id="possuiDeficiencia" name="possuiDeficiencia" />
+                <label for="possuiDeficiencia">Possui deficiência?</label> 
+            </div>
+
+            <div id="deficienciaFields" style="display: none;">
+                 <div class="form-group">
+                    <div>
+                        <label for="tipoDeficiencia">Tipo de deficiência:</label>
+                        <select id="tipoDeficiencia" name="tipoDeficiencia">
+                            <option value="">Selecione...</option>
+                            <option value="FISICA">Física</option>
+                            <option value="MOTORA">Motora</option> <option value="AUDITIVA">Auditiva</option>
+                            <option value="VISUAL">Visual</option>
+                            <option value="MENTAL">Mental</option>
+                            <option value="MULTIPLA">Múltipla</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label for="observacoesDeficiencia">Observações:</label>
+                        <input type="text" id="observacoesDeficiencia" name="observacoesDeficiencia" />
+                    </div>
+                </div>
+            </div>
+            <p id="mensagem" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+            <button type="submit">Salvar Paciente</button>
+        </form>
+    </div>
+
+    
+    <script>
+        // Script do formulário de paciente
+        document.addEventListener('DOMContentLoaded', function() {
+            const possuiDeficienciaCheckbox = document.getElementById('possuiDeficiencia');
+            const deficienciaFieldsDiv = document.getElementById('deficienciaFields');
+            const tipoDeficienciaSelect = document.getElementById('tipoDeficiencia');
+            const pacienteForm = document.getElementById('pacienteForm');
+            const cepInput = document.getElementById('cep'); 
+            const mensagemP = document.getElementById('mensagem');
+
+            if (possuiDeficienciaCheckbox) {
+                possuiDeficienciaCheckbox.addEventListener('change', function () {
+                    deficienciaFieldsDiv.style.display = this.checked ? 'block' : 'none';
+                    if(!this.checked) { 
+                        if(tipoDeficienciaSelect) tipoDeficienciaSelect.value = "";
+                        const obsDeficienciaInput = document.getElementById('observacoesDeficiencia');
+                        if(obsDeficienciaInput) obsDeficienciaInput.value = "";
+                    }
+                });
+            }
+
+            if (cepInput) {
+                cepInput.addEventListener('input', function (e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length > 8) value = value.substring(0,8); 
+                    if (value.length > 5) {
+                        value = value.substring(0,5) + '-' + value.substring(5);
+                    }
+                    e.target.value = value;
+                });
+            }
+
+            if (pacienteForm) {
+                pacienteForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    mensagemP.textContent = ''; 
+                    mensagemP.className = ''; // Limpa classes de estilo da mensagem
+
+                    const possuiDeficiencia = possuiDeficienciaCheckbox ? possuiDeficienciaCheckbox.checked : false;
+
+                    if (possuiDeficiencia && tipoDeficienciaSelect && !tipoDeficienciaSelect.value) {
+                        mensagemP.textContent = "Erro: Selecione o tipo de deficiência.";
+                        mensagemP.className = 'error'; // Usa classe para estilo
+                        return;
+                    }
+
+                    // 1. Monta o objeto endereco CORRETAMENTE
+                    const endereco = {};
+                    // Certifique-se que os IDs dos inputs de endereço no HTML correspondem
+                    // e que os names estão como "endereco.logradouro", "endereco.numero", etc.
+                    // OU, se não estiver usando names para isso, pegue por ID:
+                    endereco.logradouro = document.getElementById('logradouro') ? document.getElementById('logradouro').value : null;
+                    endereco.numero = document.getElementById('numero') ? document.getElementById('numero').value : null;
+                    endereco.complemento = document.getElementById('complemento') ? document.getElementById('complemento').value : null;
+                    endereco.bairro = document.getElementById('bairro') ? document.getElementById('bairro').value : null;
+                    endereco.cidade = document.getElementById('cidade') ? document.getElementById('cidade').value : null;
+                    endereco.estado = document.getElementById('estado') ? document.getElementById('estado').value : null;
+                    endereco.cep = document.getElementById('cep') ? document.getElementById('cep').value : null;
+                    endereco.pais = document.getElementById('pais') ? document.getElementById('pais').value : "Brasil";
+
+
+                    // 2. Monta o objeto paciente CORRETAMENTE
+                    const paciente = {
+                        nome: document.getElementById('nome') ? document.getElementById('nome').value : null,
+                        cpf: document.getElementById('cpf') ? document.getElementById('cpf').value : null,
+                        dataDeNascimento: document.getElementById('dataDeNascimento') ? document.getElementById('dataDeNascimento').value : null,
+                        telefoneContato: document.getElementById('telefoneContato') ? document.getElementById('telefoneContato').value : null,
+                        emailContato: document.getElementById('emailContato') ? document.getElementById('emailContato').value : null,
+                        endereco: endereco, // Aqui 'endereco' é o OBJETO que montamos acima
+                        possuiDeficiencia: possuiDeficiencia,
+                        tipoDeDeficiencia: (possuiDeficiencia && tipoDeficienciaSelect) ? tipoDeficienciaSelect.value : null,
+                        observacoesDeficiencia: (possuiDeficiencia && document.getElementById('observacoesDeficiencia')) ? document.getElementById('observacoesDeficiencia').value : null
+                    };
+
+                    // 3. LOG PARA VERIFICAR O JSON ANTES DE ENVIAR
+                    console.log("Enviando este JSON para o backend:", JSON.stringify(paciente, null, 2)); 
+                    // O 'null, 2' é para formatar o JSON no console, facilitando a leitura
+
+                    mensagemP.textContent = 'Salvando...';
+                    mensagemP.className = 'info'; // Usa classe para estilo
+
+                    try {
+                        // Verifique se o endpoint está correto (/api/pacientes ou /pacientes)
+                        // Baseado no erro anterior, deve ser /api/pacientes
+                        const resposta = await fetch("/api/pacientes", { 
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(paciente)
+                        });
+
+                        if (resposta.ok) {
+                            const pacienteSalvo = await resposta.json();
+                            mensagemP.textContent = `Paciente ${pacienteSalvo.nome} (ID: ${pacienteSalvo.id}) salvo com sucesso!`;
+                            mensagemP.className = 'success';
+                            pacienteForm.reset(); // Limpa o formulário
+                            if(deficienciaFieldsDiv) deficienciaFieldsDiv.style.display = "none";
+                            if(possuiDeficienciaCheckbox) possuiDeficienciaCheckbox.checked = false;
+                        } else {
+                            // Tenta ler o erro como JSON, senão como texto
+                            const errorData = await response.json().catch(async () => ({ 
+                                message: await response.text() || `Erro HTTP ${response.status}` 
+                            }));
+                            mensagemP.textContent = `Erro ao salvar: ${errorData.message || 'Verifique os dados e o console.'}`;
+                            mensagemP.className = 'error';
+                            console.error("Erro do servidor:", errorData);
+                        }
+                    } catch (error) {
+                        mensagemP.textContent = `Erro de conexão: ${error.message || 'Não foi possível conectar ao servidor.'}`;
+                        mensagemP.className = 'error';
+                        console.error("Erro na requisição:", error);
+                    }
+                });
+            }
+        });
+    </script>
+    <script> 
+        // SEU SCRIPT DA NAVBAR ATIVA VAI AQUI (a versão mais recente)
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentPath = window.location.pathname;
+            if (currentPath !== '/' && currentPath.endsWith('/')) {
+                currentPath = currentPath.slice(0, -1);
+            }
+            const navLinks = document.querySelectorAll('.navbar a');
+            // console.log("--- DEBUG NAVBAR ATIVA (index.html) ---");
+            // console.log("URL Atual Normalizada (currentPath):", currentPath);
+            navLinks.forEach(link => {
+                let linkHref = link.getAttribute('href');
+                if (linkHref && linkHref !== '/' && linkHref.endsWith('/')) {
+                    linkHref = linkHref.slice(0, -1);
+                }
+                link.classList.remove('active'); 
+                // console.log("Verificando linkHref Normalizado:", linkHref, "| Texto:", link.textContent.trim());
+                let shouldBeActive = false;
+                const homePath1 = "/"; 
+                const cadastroPacientePath = "/pacientes/cadastro"; 
+                if (linkHref === homePath1 || linkHref === cadastroPacientePath) {
+                    if (currentPath === homePath1 || currentPath === cadastroPacientePath) {
+                        shouldBeActive = true;
+                    }
+                } else if (linkHref === currentPath) {
+                    shouldBeActive = true;
+                }
+                if (shouldBeActive) {
+                    // console.log(">>> ATIVANDO LINK:", linkHref);
+                    link.classList.add('active');
+                }
+            });
+            // console.log("--- FIM DEBUG NAVBAR ATIVA ---");
+        });
+    </script>
+</body>
+</html>

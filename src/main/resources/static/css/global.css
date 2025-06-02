@@ -1,0 +1,384 @@
+/* src/main/resources/static/css/global.css */
+
+/* --- Estilos Gerais de Layout e Reset Básico --- */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif; /* Fonte mais moderna */
+    background-color: #f0f2f5; /* Um cinza claro para o fundo */
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    color: #333; /* Cor de texto padrão */
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 25px 30px; /* Ajuste no padding */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 1000px; /* Largura máxima para o conteúdo principal */
+    margin-bottom: 30px;
+}
+
+/* --- Tipografia --- */
+h2 {
+    text-align: center;
+    margin-top: 0; /* Remove margin-top se for o primeiro elemento do container */
+    margin-bottom: 30px;
+    color: #0056b3; /* Azul escuro para títulos principais */
+    font-weight: 600;
+}
+
+.section-title {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    color: #0069d9; /* Um tom de azul para subtítulos de seção */
+    border-bottom: 2px solid #dee2e6; /* Borda inferior mais sutil */
+    padding-bottom: 8px;
+    font-size: 1.3em; /* Tamanho um pouco maior */
+    font-weight: 500;
+}
+
+/* --- Barra de Navegação --- */
+.navbar {
+    background-color: #0056b3; /* Azul escuro padrão */
+    overflow: hidden; /* Para conter os floats se não usar flex */
+    margin-bottom: 25px;
+    width: 100%; /* Ocupa a largura toda */
+    max-width: 1060px; /* Largura máxima da navbar, igual ao container para alinhar */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center; /* Centraliza os links */
+    flex-wrap: wrap; /* Permite que os links quebrem a linha em telas menores */
+}
+
+.navbar a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 18px; /* Padding ajustado */
+    text-decoration: none;
+    font-size: 16px; /* Tamanho de fonte ajustado */
+    font-weight: 500;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.navbar a:hover {
+    background-color: #004494; /* Azul um pouco mais escuro no hover */
+    color: #e9ecef; /* Cor do texto levemente mais clara no hover */
+}
+
+.navbar a.active {
+    background-color: #ffffff; /* Fundo branco para o link ativo */
+    color: #0056b3;           /* Texto azul para o link ativo */
+    font-weight: bold;
+    border-radius: 5px; /* Raio de borda para o item ativo */
+    margin: 4px 2px; /* Pequena margem para destacar o item ativo */
+    padding: 10px 16px; /* Ajusta padding para compensar margem e borda */
+}
+
+/* --- Estilos de Formulários --- */
+.form-group {
+    margin-bottom: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* Espaço entre os itens do form-group */
+}
+
+.form-group label {
+    flex: 1 1 100%; /* Ocupa a linha toda por padrão */
+    margin-bottom: 6px;
+    color: #495057; /* Cor mais suave para labels */
+    font-weight: 500; /* Peso da fonte para labels */
+    font-size: 0.95em;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="password"], /* Adicionado para consistência */
+.form-group textarea,
+.form-group select {
+    flex: 1 1 calc(50% - 8px); /* Para dois campos por linha, considerando o gap */
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.form-group.full-width input,
+.form-group.full-width textarea,
+.form-group.full-width select {
+    flex: 1 1 100%; /* Campo ocupa a largura total */
+}
+
+.form-group.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    padding-top: 5px; /* Alinha melhor com outros form-groups */
+}
+
+.form-group.checkbox-group input[type="checkbox"] {
+    flex: none;
+    width: auto;
+    margin: 0;
+    transform: scale(1.2); /* Deixa o checkbox um pouco maior */
+    margin-right: 5px; /* Espaço à direita do checkbox */
+}
+
+.form-group.checkbox-group label {
+    flex: none;
+    width: auto;
+    margin-bottom: 0;
+    font-weight: normal; /* Labels de checkbox geralmente não são bold */
+    color: #333;
+}
+
+/* --- Estilos de Botões --- */
+button, .button-style-link { /* Classe para links que devem parecer botões */
+    width: 100%;
+    padding: 12px 20px;
+    background-color: #007bff; /* Azul primário para botões */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none; /* Para a classe .button-style-link */
+    display: inline-block; /* Para a classe .button-style-link */
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px; /* Margem padrão para botões */
+}
+button:hover, .button-style-link:hover {
+    background-color: #0056b3; /* Azul mais escuro no hover */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Link de Adicionar Novo (como "Agendar Nova Consulta") */
+.add-link {
+    display: flex; /* Para alinhar o conteúdo à direita */
+    justify-content: flex-end; /* Alinha o link/botão à direita */
+    margin-bottom: 20px;
+}
+.add-link a { /* Estilo de botão para o link */
+    background-color: #28a745; /* Verde para ações de "novo" */
+    color: white;
+    padding: 10px 18px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.add-link a:hover {
+    background-color: #218838; /* Verde mais escuro */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+
+/* --- Estilos de Tabelas --- */
+.table-container {
+    overflow-x: auto; /* Permite scroll horizontal em tabelas largas */
+    margin-top: 20px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+}
+th, td {
+    border: 1px solid #dee2e6; /* Borda mais suave */
+    padding: 12px 15px; /* Padding ajustado */
+    text-align: left;
+    vertical-align: middle; /* Alinha verticalmente ao meio */
+}
+th {
+    background-color: #0069d9; /* Azul para cabeçalhos de tabela */
+    color: white;
+    font-weight: 600; /* Cabeçalho em negrito */
+    white-space: nowrap; /* Evita quebra de linha no cabeçalho */
+}
+tr:nth-child(even) {
+    background-color: #f8f9fa; /* Cor sutil para linhas pares */
+}
+tr:hover {
+    background-color: #e9ecef; /* Cor de hover para linhas */
+}
+
+/* Botões de Ação dentro de tabelas */
+.action-button, .action-buttons button {
+    background-color: #007bff;
+    color: white !important; /* Garante cor do texto branca */
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none; /* Para o caso de ser um <a> */
+    margin-right: 5px;
+    margin-bottom: 5px; /* Para responsividade */
+    transition: background-color 0.2s ease;
+    display: inline-block;
+}
+.action-button:hover, .action-buttons button:hover {
+    background-color: #0056b3;
+    opacity: 1; /* Remove opacity se tinha antes */
+}
+.action-buttons button.delete-btn {
+    background-color: #dc3545; /* Vermelho para deletar */
+}
+.action-buttons button.delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* --- Estilos para Mensagens de Status e Feedback --- */
+.loading-message, .no-data-message, .not-found-message {
+    text-align: center;
+    margin-top: 20px;
+    padding: 15px;
+    color: #6c757d; /* Cinza escuro para mensagens neutras */
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+.error-message { /* Usado para mensagens de erro de API também */
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    color: #721c24; /* Vermelho escuro para texto */
+    background-color: #f8d7da; /* Fundo rosa claro */
+    border: 1px solid #f5c6cb; /* Borda vermelha clara */
+    border-radius: 4px;
+    font-weight: 500;
+}
+#formMensagem, #statusAcao { /* Para mensagens de formulário e ação */
+    text-align: center;
+    margin-top: 15px;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 4px;
+}
+/* Cores específicas para mensagens de formulário (usadas por JS) */
+#formMensagem.success, #statusAcao.success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
+#formMensagem.error, #statusAcao.error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; }
+#formMensagem.info, #statusAcao.info { color: #0c5460; background-color: #d1ecf1; border: 1px solid #bee5eb; }
+
+
+/* --- Estilos de Grids de Detalhes --- */
+.details-grid {
+    display: grid;
+    grid-template-columns: auto 1fr; /* Label com largura automática, valor ocupa o resto */
+    gap: 10px 20px; /* Espaçamento vertical e horizontal */
+    margin-bottom: 25px;
+    align-items: center;
+}
+.details-grid label {
+    font-weight: 600; /* Negrito para labels de detalhe */
+    color: #495057;
+    text-align: right;
+    padding-right: 10px; /* Para alinhar com os spans se eles tiverem padding */
+}
+.details-grid span {
+    color: #212529;
+    word-wrap: break-word;
+    background-color: #f8f9fa; /* Fundo sutil para o valor */
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+/* --- Botão Voltar --- */
+.back-button {
+    display: flex; /* Usar flex para centralizar o link/botão */
+    justify-content: center;
+    margin-top: 30px;
+}
+.back-button a {
+    background-color: #6c757d; /* Cinza para botão voltar */
+    color: white;
+    padding: 10px 25px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+.back-button a:hover {
+    background-color: #5a6268;
+}
+
+/* --- Responsividade --- */
+@media screen and (max-width: 768px) {
+    .navbar {
+        justify-content: flex-start; /* Alinha à esquerda em telas menores */
+        max-width: 100%;
+    }
+    .navbar a {
+        font-size: 15px;
+        padding: 12px 15px;
+    }
+    .navbar a.active {
+        padding: 8px 13px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+    h2 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+    }
+    .section-title {
+        font-size: 1.1em;
+        margin-bottom: 15px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="date"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"],
+    .form-group input[type="password"],
+    .form-group textarea,
+    .form-group select {
+        flex: 1 1 100%; /* Campos ocupam 100% em telas menores */
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr; /* Uma coluna para detalhes em telas menores */
+        gap: 8px;
+    }
+    .details-grid label {
+        text-align: left; /* Alinha labels à esquerda */
+        margin-bottom: 2px;
+        background-color: transparent; /* Remove fundo do label se não quiser */
+        padding: 0;
+        border: none;
+    }
+    .details-grid span {
+        background-color: #f8f9fa;
+        padding: 8px 10px;
+        border-radius: 4px;
+        border: 1px solid #eee;
+        margin-bottom: 8px; /* Espaço abaixo do span se label estiver acima */
+    }
+}

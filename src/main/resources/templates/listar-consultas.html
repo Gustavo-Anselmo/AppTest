@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Consultas - Sistema SUS</title>
+    <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+<div class="navbar">
+    <a href="/">Cadastrar Paciente</a>
+    <a href="/pacientes/lista">Listar Pacientes</a>
+    <a href="/medicos/formulario">Cadastrar Médico</a> <a href="/medicos/lista">Listar Médicos</a>
+    <a href="/consultas/cadastro">Agendar Consulta</a>
+    <a href="/consultas/lista">Listar Consultas</a>
+    <a href="/chamados/cadastro">Registrar Chamado</a>
+    <a href="/chamados/lista">Listar Chamados</a>
+</div>
+
+    <div class="container">
+        <h2>Consultas Agendadas</h2>
+        <div class="add-link">
+             <a href="/consultas/cadastro">Agendar Nova Consulta</a>
+        </div>
+
+        <div class="table-container">
+            <table id="consultasTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Paciente</th>
+                        <th>Médico</th>
+                        <th>Data/Hora</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <p id="loadingMessageConsultas" class="loading-message">Carregando consultas...</p>
+            <p id="noDataMessageConsultas" class="no-data-message" style="display: none;">Nenhuma consulta encontrada.</p>
+            <p id="errorMessageConsultas" class="error-message" style="display: none;"></p>
+        </div>
+    </div>
+
+<script>
+// Script dentro de listar-consultas.html
+document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.querySelector('#consultasTable tbody');
+    const loadingMsg = document.getElementById('loadingMessageConsultas');
+    const noDataMsg = document.getElementById('noDataMessageConsultas');
+    const errorMsg = document.getElementById('errorMessageConsultas');
+
+    fetch('/api/consultas') // Endpoint da API
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Falha ao carregar consultas: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(consultas => {
+            // !! ADICIONE ESTE CONSOLE.LOG PARA VERIFICAR !!
+            console.log("CONSULTAS RECEBIDAS PELA API:", consultas); 
+
+            loadingMsg.style.display = 'none';
+            tableBody.innerHTML = ''; 
+
+            if (!consultas || consultas.length === 0) { // Adicionada verificação se 'consultas' é null ou undefined
+                noDataMsg.style.display = 'block';
+                return;
+            }
+            
+            noDataMsg.style.display = 'none'; 
+            
+            consultas.forEach(c => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = c.id;
+                row.insertCell().textContent = c.pacienteNome || `ID: ${c.pacienteId}`;
+                row.insertCell().textContent = c.medicoNome || `ID: ${c.medicoId}`;
+                row.insertCell().textContent = c.dataHora ? new Date(c.dataHora).toLocaleString('pt-BR') : 'N/A';
+                row.insertCell().textContent = c.descricao || 'N/A';
+                row.insertCell().textContent = c.statusConsulta || 'N/A';
+            });
+        })
+        .catch(error => {
+            loadingMsg.style.display = 'none';
+            errorMsg.textContent = error.message;
+            errorMsg.style.display = 'block';
+            console.error('Erro ao buscar consultas:', error);
+        });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AppSUS</title>
+    <link rel="stylesheet" href="/css/global.css"> </head>
+<body>
+    <div class="navbar">
+        <a href="/">Cadastrar Paciente</a>
+        <a href="/pacientes/lista">Listar Pacientes</a>
+        <a href="/medicos/formulario">Cadastrar Médico</a>
+        <a href="/medicos/lista">Listar Médicos</a>
+        <a href="/consultas/cadastro">Agendar Consulta</a>
+        <a href="/consultas/lista">Listar Consultas</a>
+        <a href="/chamados/cadastro">Registrar Chamado</a>
+        <a href="/chamados/lista">Listar Chamados</a>
+        </div>
+
+    <div class="container" style="max-width: 500px;"> <h2>Login no Sistema</h2>
+
+        <div th:if="${param.error}" class="error-message" style="margin-bottom: 15px;">
+            Usuário ou senha inválidos.
+        </div>
+
+        <div th:if="${param.logout}" class="info-message" style="margin-bottom: 15px;"> Você foi desconectado com sucesso.
+        </div>
+
+        <form th:action="@{/login}" method="post" id="loginForm"> <div class="form-group full-width">
+                <label for="username">Usuário (Username):</label>
+                <input type="text" id="username" name="username" required autofocus>
+            </div>
+            <div class="form-group full-width">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Entrar</button>
+            </form>
+    </div>
+
+    <script>
+        // Script da Navbar Ativa (a versão mais recente com normalização)
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentPath = window.location.pathname;
+            if (currentPath !== '/' && currentPath.endsWith('/')) {
+                currentPath = currentPath.slice(0, -1);
+            }
+            const navLinks = document.querySelectorAll('.navbar a');
+
+            navLinks.forEach(link => {
+                let linkHref = link.getAttribute('href');
+                if (linkHref && linkHref !== '/' && linkHref.endsWith('/')) {
+                    linkHref = linkHref.slice(0, -1);
+                }
+                link.classList.remove('active');
+
+                let shouldBeActive = false;
+                const homePath1 = "/";
+                const cadastroPacientePath = "/pacientes/cadastro";
+
+                if (linkHref === homePath1 || linkHref === cadastroPacientePath) {
+                    if (currentPath === homePath1 || currentPath === cadastroPacientePath) {
+                        shouldBeActive = true;
+                    }
+                } else if (linkHref === currentPath) {
+                    shouldBeActive = true;
+                }
+                
+                // Caso específico para o link de login na navbar
+                if (linkHref === "/login" && currentPath === "/login") {
+                    shouldBeActive = true;
+                }
+
+
+                if (shouldBeActive) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

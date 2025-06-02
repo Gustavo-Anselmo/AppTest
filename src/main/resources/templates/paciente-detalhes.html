@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Paciente - AppSUS</title>
+    <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+<div class="navbar">
+    <a href="/">Cadastrar Paciente</a>
+    <a href="/pacientes/lista">Listar Pacientes</a>
+    <a href="/medicos/formulario">Cadastrar Médico</a> <a href="/medicos/lista">Listar Médicos</a>
+    <a href="/consultas/cadastro">Agendar Consulta</a>
+    <a href="/consultas/lista">Listar Consultas</a>
+    <a href="/chamados/cadastro">Registrar Chamado</a>
+    <a href="/chamados/lista">Listar Chamados</a>
+</div>
+
+    <div class="container">
+        <h2 id="nomePacienteTitulo">Detalhes do Paciente</h2>
+        <div id="loading" class="loading-message">Carregando detalhes...</div>
+        <div id="notFound" class="not-found-message" style="display: none;">Paciente não encontrado.</div>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div id="pacienteDetails" class="details-view" style="display: none;">
+            <h3 class="section-title">Dados Pessoais</h3>
+            <div class="details-grid">
+                <label>ID:</label><span id="pacienteIdDisplay"></span>
+                <label>Nome Completo:</label><span id="nomePaciente"></span>
+                <label>CPF:</label><span id="cpfPaciente"></span>
+                <label>Data de Nascimento:</label><span id="dataNascimentoPaciente"></span>
+                <label>Telefone de Contato:</label><span id="telefonePaciente"></span>
+                <label>E-mail de Contato:</label><span id="emailPaciente"></span>
+            </div>
+
+            <h3 class="section-title">Endereço</h3>
+            <div class="details-grid">
+                <label>Logradouro:</label><span id="logradouroPaciente"></span>
+                <label>Número:</label><span id="numeroPaciente"></span>
+                <label>Complemento:</label><span id="complementoPaciente"></span>
+                <label>Bairro:</label><span id="bairroPaciente"></span>
+                <label>Cidade:</label><span id="cidadePaciente"></span>
+                <label>Estado:</label><span id="estadoPaciente"></span>
+                <label>CEP:</label><span id="cepPaciente"></span>
+                <label>País:</label><span id="paisPaciente"></span>
+            </div>
+
+            <h3 class="section-title">Informações de Deficiência</h3>
+            <div class="details-grid">
+                <label>Possui Deficiência?</label><span id="possuiDeficienciaPaciente"></span>
+                <div id="infoTipoDeficiencia" style="display:contents;"> <label>Tipo de Deficiência:</label><span id="tipoDeficienciaPaciente"></span>
+                </div>
+                <div id="infoObsDeficiencia" style="display:contents;">
+                     <label>Observações:</label><span id="observacoesDeficienciaPaciente"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-button" style="margin-top: 20px;">
+            <a href="/pacientes/lista">Voltar para Lista de Pacientes</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pacienteDetailsDiv = document.getElementById('pacienteDetails');
+            const loadingMessage = document.getElementById('loading');
+            const notFoundMessage = document.getElementById('notFound');
+            const errorMessage = document.getElementById('errorMessage');
+            const nomePacienteTitulo = document.getElementById('nomePacienteTitulo');
+
+            const pathSegments = window.location.pathname.split('/');
+            const pacienteId = pathSegments[pathSegments.length - 2]; 
+
+            if (!pacienteId || isNaN(pacienteId)) {
+                loadingMessage.style.display = 'none';
+                errorMessage.textContent = 'ID do paciente inválido ou não fornecido na URL.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            fetch(`/api/pacientes/${pacienteId}`) // Assumindo que PacienteController usa /api/pacientes
+                .then(response => {
+                    loadingMessage.style.display = 'none'; 
+                    if (response.status === 404) {
+                        notFoundMessage.style.display = 'block';
+                        throw new Error('Paciente não encontrado');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`Erro ${response.status}: Falha ao carregar detalhes.`);
+                    }
+                    return response.json();
+                })
+                .then(paciente => {
+                    pacienteDetailsDiv.style.display = 'block'; 
+                    nomePacienteTitulo.textContent = `Detalhes do Paciente: ${paciente.nome}`;
+
+                    document.getElementById('pacienteIdDisplay').textContent = paciente.id;
+                    document.getElementById('nomePaciente').textContent = paciente.nome;
+                    document.getElementById('cpfPaciente').textContent = paciente.cpf; // Considere se DTO expõe
+                    document.getElementById('dataNascimentoPaciente').textContent = paciente.dataDeNascimento;
+                    document.getElementById('telefonePaciente').textContent = paciente.telefoneContato;
+                    document.getElementById('emailPaciente').textContent = paciente.emailContato;
+
+                    if (paciente.endereco) {
+                        document.getElementById('logradouroPaciente').textContent = paciente.endereco.logradouro || 'N/A';
+                        document.getElementById('numeroPaciente').textContent = paciente.endereco.numero || 'N/A';
+                        document.getElementById('complementoPaciente').textContent = paciente.endereco.complemento || 'N/A';
+                        document.getElementById('bairroPaciente').textContent = paciente.endereco.bairro || 'N/A';
+                        document.getElementById('cidadePaciente').textContent = paciente.endereco.cidade || 'N/A';
+                        document.getElementById('estadoPaciente').textContent = paciente.endereco.estado || 'N/A';
+                        document.getElementById('cepPaciente').textContent = paciente.endereco.cep || 'N/A';
+                        document.getElementById('paisPaciente').textContent = paciente.endereco.pais || 'N/A';
+                    }
+
+                    const possuiDeficienciaSpan = document.getElementById('possuiDeficienciaPaciente');
+                    const tipoDeficienciaDiv = document.getElementById('infoTipoDeficiencia');
+                    const obsDeficienciaDiv = document.getElementById('infoObsDeficiencia');
+
+                    if (paciente.possuiDeficiencia) {
+                        possuiDeficienciaSpan.textContent = 'Sim';
+                        document.getElementById('tipoDeficienciaPaciente').textContent = paciente.tipoDeDeficiencia || 'Não especificado';
+                        document.getElementById('observacoesDeficienciaPaciente').textContent = paciente.observacoesDeficiencia || 'Nenhuma';
+                        tipoDeficienciaDiv.style.display = 'contents'; // Para funcionar com grid
+                        obsDeficienciaDiv.style.display = 'contents';  // Para funcionar com grid
+                    } else {
+                        possuiDeficienciaSpan.textContent = 'Não';
+                        tipoDeficienciaDiv.style.display = 'none';
+                        obsDeficienciaDiv.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    if (error.message !== 'Paciente não encontrado') { // Evita duplicar msg de notFound
+                        errorMessage.textContent = error.message;
+                        errorMessage.style.display = 'block';
+                    }
+                    console.error('Erro:', error);
+                });
+        });
+    </script>
+    <script> // Script Navbar Ativa
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.navbar a');
+            navLinks.forEach(link => {
+                const linkHref = link.getAttribute('href');
+                if ((linkHref === '/' || linkHref === '/pacientes/cadastro')) {
+                    if (currentPath === '/' || currentPath === '/pacientes/cadastro') {
+                        link.classList.add('active');
+                    }
+                } else if (linkHref === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
